@@ -38,20 +38,11 @@ LoadModelFromMemory(const char* fileType,
 int
 main()
 {
-  std::string window_title = "raylibfx";
-  uint32_t window_width = 1280;
-  uint32_t window_height = 720;
-  uint32_t scale_factor = 1;
+  SetConfigFlags(FLAG_VSYNC_HINT | FLAG_MSAA_4X_HINT | FLAG_WINDOW_UNDECORATED);
+  InitWindow(0, 0, "raylibfx");
 
-  SetConfigFlags(FLAG_VSYNC_HINT | FLAG_MSAA_4X_HINT);
-  InitWindow(window_width * scale_factor,
-             window_height * scale_factor,
-             window_title.c_str());
-
-  Image image =
-    LoadImageFromMemory(".png", pokeemerald_png, pokeemerald_png_len);
-  Texture2D texture = LoadTextureFromImage(image);
-  UnloadImage(image);
+  uint32_t screen_width = GetScreenWidth();
+  uint32_t screen_height = GetScreenHeight();
 
   Model model = LoadModelFromMemory(".glb", helmet_glb, helmet_glb_len);
 
@@ -59,8 +50,11 @@ main()
     NULL,
     std::string(reinterpret_cast<char*>(blur_frag), blur_frag_len).c_str());
 
-  RenderTexture2D target = LoadRenderTexture(window_width * scale_factor,
-                                             window_height * scale_factor);
+  int pass_loc = GetShaderLocation(shader, "pass");
+  int pass = 0;
+
+  RenderTexture2D target_0 = LoadRenderTexture(screen_width, screen_height);
+  RenderTexture2D target_1 = LoadRenderTexture(screen_width, screen_height);
 
   Vector3 position = Vector3{ 0.0f, 1.0f, 0.0f };
   Camera camera = {
@@ -74,38 +68,49 @@ main()
   while (!WindowShouldClose()) {
     UpdateCamera(&camera, CAMERA_ORBITAL);
 
-    BeginTextureMode(target);
+    BeginTextureMode(target_0);
     ClearBackground(RAYWHITE);
-
     BeginMode3D(camera);
     DrawModel(model, position, 1.0f, WHITE);
     DrawGrid(10, 1.0f);
     EndMode3D();
+    EndTextureMode();
 
+    BeginTextureMode(target_1);
+    ClearBackground(RAYWHITE);
+    pass = 0;
+    SetShaderValue(shader, pass_loc, &pass, SHADER_UNIFORM_INT);
+    BeginShaderMode(shader);
+    DrawTextureRec(target_0.texture,
+                   Rectangle{ 0.0f,
+                              0.0f,
+                              (float)target_0.texture.width,
+                              (float)-target_0.texture.height },
+                   Vector2{},
+                   WHITE);
+    EndShaderMode();
     EndTextureMode();
 
     BeginDrawing();
     ClearBackground(RAYWHITE);
-
+    pass = 1;
+    SetShaderValue(shader, pass_loc, &pass, SHADER_UNIFORM_INT);
     BeginShaderMode(shader);
-    DrawTextureRec(target.texture,
+    DrawTextureRec(target_1.texture,
                    Rectangle{ 0.0f,
                               0.0f,
-                              (float)target.texture.width,
-                              (float)-target.texture.height },
+                              (float)target_1.texture.width,
+                              (float)-target_1.texture.height },
                    Vector2{},
                    WHITE);
     EndShaderMode();
-
-    DrawTextureEx(texture, Vector2{}, 0.0f, (float)scale_factor, WHITE);
-
     EndDrawing();
   }
 
-  UnloadTexture(texture);
   UnloadModel(model);
   UnloadShader(shader);
-  UnloadRenderTexture(target);
+  UnloadRenderTexture(target_0);
+  UnloadRenderTexture(target_1);
 
   CloseWindow();
 }

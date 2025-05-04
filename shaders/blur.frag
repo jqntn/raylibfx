@@ -1,39 +1,30 @@
 #version 330
 
-// Input vertex attributes (from vertex shader)
 in vec2 fragTexCoord;
-in vec4 fragColor;
-
-// Input uniform values
-uniform sampler2D texture0;
-uniform vec4 colDiffuse;
-
-// Output fragment color
 out vec4 finalColor;
 
-// NOTE: Add your custom variables here
+uniform sampler2D texture0;
+uniform int pass;
 
-// NOTE: Render size values must be passed from code
-const float renderWidth = 480;
-const float renderHeight = 480;
-
-float offset[3] = float[](0.0, 1.3846153846, 3.2307692308);
-float weight[3] = float[](0.2270270270, 0.3162162162, 0.0702702703);
+const int radius = 16;
 
 void
 main()
 {
-  // Texel color fetching from texture sampler
-  vec3 texelColor = texture(texture0, fragTexCoord).rgb * weight[0];
+  vec2 dir = vec2(pass == 0, pass == 1);
+  vec2 tex_size = textureSize(texture0, 0);
+  vec2 tex_offset = 1.0 / tex_size;
+  vec3 result = vec3(0.0);
+  float weight_sum = 0.0;
+  float sigma = radius * 0.5;
 
-  for (int i = 1; i < 3; i++) {
-    texelColor +=
-      texture(texture0, fragTexCoord + vec2(offset[i]) / renderWidth, 0.0).rgb *
-      weight[i];
-    texelColor +=
-      texture(texture0, fragTexCoord - vec2(offset[i]) / renderWidth, 0.0).rgb *
-      weight[i];
+  for (int i = -radius; i <= radius; i++) {
+    vec2 offset = dir * i * tex_offset;
+    float weight = exp(-i * i / (2.0 * sigma * sigma));
+    result += texture(texture0, fragTexCoord + offset).rgb * weight;
+    weight_sum += weight;
   }
 
-  finalColor = vec4(texelColor, 1.0);
+  result /= weight_sum;
+  finalColor = vec4(result, 1.0);
 }
