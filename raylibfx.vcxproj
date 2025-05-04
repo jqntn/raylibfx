@@ -122,43 +122,28 @@
       <Command>@echo off
 setlocal enabledelayedexpansion
 
-set "INPUT_ROOT=$(ProjectDir)shaders"
-set "OUTPUT_ROOT=$(ProjectDir)hshaders"
+call :process_files "$(ProjectDir)shaders" "$(ProjectDir)hshaders"
+if not exist "$(ProjectDir)hresources" call :process_files "$(ProjectDir)resources" "$(ProjectDir)hresources"
 
-if exist "%OUTPUT_ROOT%" rmdir /s /q "%OUTPUT_ROOT%"
-md "%OUTPUT_ROOT%"
+exit /b
 
-for /R "%INPUT_ROOT%" %%F in (*) do (
-    set "SRC=%%~fF"
-    set "REL=!SRC:%INPUT_ROOT%=!"
-    set "REL=!REL:~1!"
-    set "OUT_FILE=%OUTPUT_ROOT%\!REL!.h"
-    for %%D in ("!OUT_FILE!") do set "OUT_DIR=%%~dpD"
-    if not exist "!OUT_DIR!" md "!OUT_DIR!"
-    pushd "%%~dpF"
-    xxd -i "%%~nxF" &gt; "!OUT_FILE!"
+:process_files
+set "input_root=%~1"
+set "output_root=%~2"
+if exist "%output_root%" rd /s /q "%output_root%"
+md "%output_root%"
+for /r "%input_root%" %%f in (*) do (
+    set "src=%%~ff"
+    set "rel=!src:%input_root%=!"
+    set "rel=!rel:~1!"
+    set "out_file=%output_root%\!rel!.h"
+    for %%d in ("!out_file!") do set "out_dir=%%~dpd"
+    if not exist "!out_dir!" md "!out_dir!"
+    pushd "%%~dpf"
+    xxd -i "%%~nxf" &gt; "!out_file!"
     popd
 )
-
-set "INPUT_ROOT=$(ProjectDir)resources"
-set "OUTPUT_ROOT=$(ProjectDir)hresources"
-
-if exist "%OUTPUT_ROOT%" exit /b 0
-md "%OUTPUT_ROOT%"
-
-for /R "%INPUT_ROOT%" %%F in (*) do (
-    set "SRC=%%~fF"
-    set "REL=!SRC:%INPUT_ROOT%=!"
-    set "REL=!REL:~1!"
-    set "OUT_FILE=%OUTPUT_ROOT%\!REL!.h"
-    for %%D in ("!OUT_FILE!") do set "OUT_DIR=%%~dpD"
-    if not exist "!OUT_DIR!" md "!OUT_DIR!"
-    pushd "%%~dpF"
-    xxd -i "%%~nxF" &gt; "!OUT_FILE!"
-    popd
-)
-
-endlocal</Command>
+exit /b</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -181,43 +166,28 @@ endlocal</Command>
       <Command>@echo off
 setlocal enabledelayedexpansion
 
-set "INPUT_ROOT=$(ProjectDir)shaders"
-set "OUTPUT_ROOT=$(ProjectDir)hshaders"
+call :process_files "$(ProjectDir)shaders" "$(ProjectDir)hshaders"
+if not exist "$(ProjectDir)hresources" call :process_files "$(ProjectDir)resources" "$(ProjectDir)hresources"
 
-if exist "%OUTPUT_ROOT%" rmdir /s /q "%OUTPUT_ROOT%"
-md "%OUTPUT_ROOT%"
+exit /b
 
-for /R "%INPUT_ROOT%" %%F in (*) do (
-    set "SRC=%%~fF"
-    set "REL=!SRC:%INPUT_ROOT%=!"
-    set "REL=!REL:~1!"
-    set "OUT_FILE=%OUTPUT_ROOT%\!REL!.h"
-    for %%D in ("!OUT_FILE!") do set "OUT_DIR=%%~dpD"
-    if not exist "!OUT_DIR!" md "!OUT_DIR!"
-    pushd "%%~dpF"
-    xxd -i "%%~nxF" &gt; "!OUT_FILE!"
+:process_files
+set "input_root=%~1"
+set "output_root=%~2"
+if exist "%output_root%" rd /s /q "%output_root%"
+md "%output_root%"
+for /r "%input_root%" %%f in (*) do (
+    set "src=%%~ff"
+    set "rel=!src:%input_root%=!"
+    set "rel=!rel:~1!"
+    set "out_file=%output_root%\!rel!.h"
+    for %%d in ("!out_file!") do set "out_dir=%%~dpd"
+    if not exist "!out_dir!" md "!out_dir!"
+    pushd "%%~dpf"
+    xxd -i "%%~nxf" &gt; "!out_file!"
     popd
 )
-
-set "INPUT_ROOT=$(ProjectDir)resources"
-set "OUTPUT_ROOT=$(ProjectDir)hresources"
-
-if exist "%OUTPUT_ROOT%" exit /b 0
-md "%OUTPUT_ROOT%"
-
-for /R "%INPUT_ROOT%" %%F in (*) do (
-    set "SRC=%%~fF"
-    set "REL=!SRC:%INPUT_ROOT%=!"
-    set "REL=!REL:~1!"
-    set "OUT_FILE=%OUTPUT_ROOT%\!REL!.h"
-    for %%D in ("!OUT_FILE!") do set "OUT_DIR=%%~dpD"
-    if not exist "!OUT_DIR!" md "!OUT_DIR!"
-    pushd "%%~dpF"
-    xxd -i "%%~nxF" &gt; "!OUT_FILE!"
-    popd
-)
-
-endlocal</Command>
+exit /b</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
