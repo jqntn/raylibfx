@@ -1,3 +1,5 @@
+#pragma once
+
 extern unsigned char pokeemerald_png[];
 extern unsigned int pokeemerald_png_len;
 

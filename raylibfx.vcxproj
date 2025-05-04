@@ -71,11 +71,11 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ExternalIncludePath>cresources;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>hshaders;hresources;$(ExternalIncludePath)</ExternalIncludePath>
     <IncludePath>include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <ExternalIncludePath>cresources;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>hshaders;hresources;$(ExternalIncludePath)</ExternalIncludePath>
     <IncludePath>include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -122,12 +122,29 @@
       <Command>@echo off
 setlocal enabledelayedexpansion
 
-if exist "$(ProjectDir)cresources" exit /b 0
+set "INPUT_ROOT=$(ProjectDir)shaders"
+set "OUTPUT_ROOT=$(ProjectDir)hshaders"
 
-md "$(ProjectDir)cresources"
+if exist "%OUTPUT_ROOT%" rmdir /s /q "%OUTPUT_ROOT%"
+md "%OUTPUT_ROOT%"
+
+for /R "%INPUT_ROOT%" %%F in (*) do (
+    set "SRC=%%~fF"
+    set "REL=!SRC:%INPUT_ROOT%=!"
+    set "REL=!REL:~1!"
+    set "OUT_FILE=%OUTPUT_ROOT%\!REL!.h"
+    for %%D in ("!OUT_FILE!") do set "OUT_DIR=%%~dpD"
+    if not exist "!OUT_DIR!" md "!OUT_DIR!"
+    pushd "%%~dpF"
+    xxd -i "%%~nxF" &gt; "!OUT_FILE!"
+    popd
+)
 
 set "INPUT_ROOT=$(ProjectDir)resources"
-set "OUTPUT_ROOT=$(ProjectDir)cresources"
+set "OUTPUT_ROOT=$(ProjectDir)hresources"
+
+if exist "%OUTPUT_ROOT%" exit /b 0
+md "%OUTPUT_ROOT%"
 
 for /R "%INPUT_ROOT%" %%F in (*) do (
     set "SRC=%%~fF"
@@ -164,12 +181,29 @@ endlocal</Command>
       <Command>@echo off
 setlocal enabledelayedexpansion
 
-if exist "$(ProjectDir)cresources" exit /b 0
+set "INPUT_ROOT=$(ProjectDir)shaders"
+set "OUTPUT_ROOT=$(ProjectDir)hshaders"
 
-md "$(ProjectDir)cresources"
+if exist "%OUTPUT_ROOT%" rmdir /s /q "%OUTPUT_ROOT%"
+md "%OUTPUT_ROOT%"
+
+for /R "%INPUT_ROOT%" %%F in (*) do (
+    set "SRC=%%~fF"
+    set "REL=!SRC:%INPUT_ROOT%=!"
+    set "REL=!REL:~1!"
+    set "OUT_FILE=%OUTPUT_ROOT%\!REL!.h"
+    for %%D in ("!OUT_FILE!") do set "OUT_DIR=%%~dpD"
+    if not exist "!OUT_DIR!" md "!OUT_DIR!"
+    pushd "%%~dpF"
+    xxd -i "%%~nxF" &gt; "!OUT_FILE!"
+    popd
+)
 
 set "INPUT_ROOT=$(ProjectDir)resources"
-set "OUTPUT_ROOT=$(ProjectDir)cresources"
+set "OUTPUT_ROOT=$(ProjectDir)hresources"
+
+if exist "%OUTPUT_ROOT%" exit /b 0
+md "%OUTPUT_ROOT%"
 
 for /R "%INPUT_ROOT%" %%F in (*) do (
     set "SRC=%%~fF"
@@ -187,11 +221,16 @@ endlocal</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\shaders.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\resources.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\resources.h" />
+    <ClInclude Include="include\shaders.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\blur.frag" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -4,6 +4,7 @@
 #include <iosfwd>
 #include <raylib.h>
 #include <resources.h>
+#include <shaders.h>
 #include <string>
 
 extern "C"
@@ -50,8 +51,16 @@ main()
   Image image =
     LoadImageFromMemory(".png", pokeemerald_png, pokeemerald_png_len);
   Texture2D texture = LoadTextureFromImage(image);
+  UnloadImage(image);
 
   Model model = LoadModelFromMemory(".glb", helmet_glb, helmet_glb_len);
+
+  Shader shader = LoadShaderFromMemory(
+    NULL,
+    std::string(reinterpret_cast<char*>(blur_frag), blur_frag_len).c_str());
+
+  RenderTexture2D target = LoadRenderTexture(window_width * scale_factor,
+                                             window_height * scale_factor);
 
   Vector3 position = Vector3{ 0.0f, 1.0f, 0.0f };
   Camera camera = {
@@ -65,20 +74,38 @@ main()
   while (!WindowShouldClose()) {
     UpdateCamera(&camera, CAMERA_ORBITAL);
 
-    BeginDrawing();
+    BeginTextureMode(target);
     ClearBackground(RAYWHITE);
-
-    DrawTextureEx(texture, Vector2{}, 0.0f, (float)scale_factor, WHITE);
 
     BeginMode3D(camera);
     DrawModel(model, position, 1.0f, WHITE);
     DrawGrid(10, 1.0f);
     EndMode3D();
 
+    EndTextureMode();
+
+    BeginDrawing();
+    ClearBackground(RAYWHITE);
+
+    BeginShaderMode(shader);
+    DrawTextureRec(target.texture,
+                   Rectangle{ 0.0f,
+                              0.0f,
+                              (float)target.texture.width,
+                              (float)-target.texture.height },
+                   Vector2{},
+                   WHITE);
+    EndShaderMode();
+
+    DrawTextureEx(texture, Vector2{}, 0.0f, (float)scale_factor, WHITE);
+
     EndDrawing();
   }
 
   UnloadTexture(texture);
+  UnloadModel(model);
+  UnloadShader(shader);
+  UnloadRenderTexture(target);
 
   CloseWindow();
 }
