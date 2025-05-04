@@ -104,6 +104,7 @@ main()
                    Vector2{},
                    WHITE);
     EndShaderMode();
+    DrawText(TextFormat("%d", GetFPS()), 8, 4, 30, GREEN);
     EndDrawing();
   }
 
