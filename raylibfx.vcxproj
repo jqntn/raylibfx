@@ -140,7 +140,7 @@ for /r "%input_root%" %%f in (*) do (
     for %%d in ("!out_file!") do set "out_dir=%%~dpd"
     if not exist "!out_dir!" md "!out_dir!"
     pushd "%%~dpf"
-    xxd -i "%%~nxf" &gt; "!out_file!"
+    powershell -File "$(ProjectDir)scripts\xxdi.ps1" "%%~nxf" &gt; "!out_file!"
     popd
 )
 exit /b</Command>
@@ -184,7 +184,7 @@ for /r "%input_root%" %%f in (*) do (
     for %%d in ("!out_file!") do set "out_dir=%%~dpd"
     if not exist "!out_dir!" md "!out_dir!"
     pushd "%%~dpf"
-    xxd -i "%%~nxf" &gt; "!out_file!"
+    powershell -File "$(ProjectDir)scripts\xxdi.ps1" "%%~nxf" &gt; "!out_file!"
     popd
 )
 exit /b</Command>
